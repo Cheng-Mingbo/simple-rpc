@@ -1,0 +1,7 @@
+log_level: DEBUG
+log_path: ../log/
+log_file_name: test_rpc_server
+log_file_size: 1000000
+log_sync_interval: 500
+port: 8080
+io_threads: 4
