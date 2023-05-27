@@ -10,5 +10,7 @@
 namespace rpc {
 pid_t getPid();
 pid_t getThreadId();
+
+int64_t getNowTime();
 }
 #endif //RPC_UTIL_H

@@ -9,6 +9,7 @@ include_directories(${PROJECT_SOURCE_DIR}/rpc/include/common/log)
 include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net/coder)
 include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net/rpc)
 include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net/tcp)
+include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net)
 
 # Create the rpc library
 add_library(rpc "")
