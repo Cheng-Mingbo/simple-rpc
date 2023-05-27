@@ -40,7 +40,7 @@ std::function<void()> Channel::handler(Channel::TriggerEvent event) {
 }
 
 void
-Channel::listen(Channel::TriggerEvent event, std::function<void()> callback, std::function<void()> error_callback) {
+Channel::listen(Channel::TriggerEvent event, const std::function<void()>& callback, std::function<void()> error_callback) {
     if (event == TriggerEvent::kReadEvent) {
         events_.events |= EPOLLIN;
         read_callback_ = callback;

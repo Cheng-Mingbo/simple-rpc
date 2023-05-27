@@ -45,6 +45,7 @@ void Logger::init() {
    timer_channel_ = std::make_shared<TimerChannel>(Config::GetGlobalConfig().log_sync_interval_, true, [this] { syncLoop(); });
    auto* loop = EventLoop::getEventLoopOfCurrentThread();
    loop->addTimer(timer_channel_);
+    LOG_DEBUG("success init logger");
 }
 
 void Logger::pushLog(const std::string &msg) {
@@ -62,6 +63,7 @@ void Logger::pushAppLog(const std::string &msg) {
 }
 
 void Logger::syncLoop() {
+    LOG_DEBUG("syncLoop is called");
     std::vector<std::vector<std::string>> vecs(2);
     {
         std::scoped_lock<std::mutex> lock(mutex_);
@@ -79,7 +81,10 @@ void Logger::syncLoop() {
 
 void Logger::InitGlobalLogger(int type) {
     g_logger = std::make_shared<Logger>(StringToLogLevel(Config::GetGlobalConfig().log_level_), type);
-    g_logger->init();
+    if (type > 1) {
+        g_logger->init();
+    }
+    
 }
 
 Logger &Logger::SetGlobalLogger(int type) {

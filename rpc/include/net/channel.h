@@ -27,7 +27,7 @@ class Channel {
     
     void setNonBlock();
     std::function<void()> handler(TriggerEvent event);
-    void listen(TriggerEvent event, std::function<void()> callback, std::function<void()> error_callback = nullptr);
+    void listen(TriggerEvent event, const std::function<void()>& callback, std::function<void()> error_callback = nullptr);
     void cancel(TriggerEvent event);
     
     int getFd() const { return fd_; }

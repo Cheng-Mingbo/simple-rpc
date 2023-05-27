@@ -129,10 +129,10 @@ void EventLoop::loop() {
         int num = epoll_wait(epoll_fd_, events.data(), g_max_event_num, timeout);
         LOG_DEBUG("EventLoop::loop() epoll_wait return: %d", num);
         if (num < 0) {
+            LOG_ERROR("EventLoop::loop() error: %d, info[%s]", errno, strerror(errno));
             if (errno == EINTR) {
                 continue;
             }
-            LOG_ERROR("EventLoop::loop() error: %d, info[%s]", errno, strerror(errno));
             exit(1);
         } else if (num == 0) {
             // timeout
@@ -167,7 +167,7 @@ void EventLoop::addEpollEvent(Channel *channel) {
     if (isInLoopThread()) {
         ADD_EPOLL_EVENT();
     } else {
-        auto cb = [this, &channel]() {
+        auto cb = [this, channel]() {
             ADD_EPOLL_EVENT();
         };
         addTask(cb, true);
