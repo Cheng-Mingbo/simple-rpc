@@ -41,7 +41,7 @@ static thread_local EventLoop* t_loop = nullptr;
 static int g_max_timeout = 10000;
 static int g_max_event_num = 1024;
 
-EventLoop::EventLoop() {
+EventLoop::EventLoop() : timer_(new Timer()), wakeup_fd_(eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK)){
    if (t_loop != nullptr) {
        LOG_ERROR("EventLoop::EventLoop() error: already have a EventLoop in this thread");
        exit(1);
@@ -52,8 +52,8 @@ EventLoop::EventLoop() {
          LOG_ERROR("EventLoop::EventLoop() error: %d, info[%s]", errno, strerror(errno));
          exit(1);
     }
-    initWakeupChannel();
     initTimer();
+    initWakeupChannel();
     
     LOG_INFO("Success create EventLoop in thread: %d", tid_);
     t_loop = this;
@@ -74,7 +74,6 @@ EventLoop::~EventLoop() {
 }
 
 void EventLoop::initTimer() {
-    timer_ = new Timer();
     addEpollEvent(timer_);
 }
 
@@ -84,7 +83,6 @@ void EventLoop::addTimer(TimerChannel::s_ptr timer_channel) {
 }
 
 void EventLoop::initWakeupChannel() {
-    wakeup_fd_ = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
     if (wakeup_fd_ < 0) {
         LOG_ERROR("EventLoop::initWakeupChannel() error: %d, info[%s]", errno, strerror(errno));
         exit(1);

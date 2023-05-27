@@ -8,11 +8,11 @@
 
 int main() {
     rpc::Config::SetGlobalConfig("config.yaml");
-    rpc::Logger::GetGlobalLogger();
+    rpc::Logger::SetGlobalLogger();
     std::jthread give_me_a_name([] {
         for (int i = 0; i < 100000; ++i) {
             LOG_INFO("hello world %d", i);
-            rpc::Logger::GetGlobalLogger().syncLoop();
+            rpc::Logger::SetGlobalLogger().syncLoop();
         }
     });
     for (int i = 0; i < 100000; ++i) {
@@ -21,7 +21,7 @@ int main() {
     
     
     std::this_thread::sleep_for(std::chrono::seconds(12));
-    rpc::Logger::GetGlobalLogger().syncLoop();
+    rpc::Logger::SetGlobalLogger().syncLoop();
     
     std::cout << "Hello, World!" << std::endl;
     return 0;

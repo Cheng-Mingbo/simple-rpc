@@ -105,7 +105,7 @@ void Timer::addTimer(TimerChannel::s_ptr timer_channel) {
                 is_reset_timerfd = true;
             }
         }
-        timer_channels_.emplace(timer_channel->getArriveTime(), timer_channel);
+       timer_channels_.insert(std::make_pair(timer_channel->getArriveTime(), timer_channel));
     }
     if (is_reset_timerfd) {
         resetArriveTime();

@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include <memory>
 #include "logger.h"
@@ -16,12 +16,12 @@ int main() {
     
     rpc::Config::SetGlobalConfig("config.yaml");
     
-    rpc::Logger::GetGlobalLogger();
+    rpc::Logger::SetGlobalLogger();
     
     //test_io_thread();
     
-     rpc::EventLoop* eventloop = new rpc::EventLoop();
-    
+     
+    auto* eventloop = rpc::EventLoop::getEventLoopOfCurrentThread();
      int listenfd = socket(AF_INET, SOCK_STREAM, 0);
      if (listenfd == -1) {
        LOG_ERROR("listenfd = -1");
@@ -68,8 +68,10 @@ int main() {
          }
        }
      );
-    
+
      eventloop->addTimer(timer_event);
+    
+    
      eventloop->loop();
     
     return 0;

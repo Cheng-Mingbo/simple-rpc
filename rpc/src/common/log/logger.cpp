@@ -9,6 +9,7 @@
 #include "file_appender.h"
 #include "config.h"
 #include "asynclogger.h"
+#include "eventloop.h"
 
 namespace rpc {
 
@@ -41,7 +42,9 @@ Logger::~Logger() {
 
 void Logger::init() {
     // 加入定时器
-   
+   timer_channel_ = std::make_shared<TimerChannel>(Config::GetGlobalConfig().log_sync_interval_, true, [this] { syncLoop(); });
+   auto* loop = EventLoop::getEventLoopOfCurrentThread();
+   loop->addTimer(timer_channel_);
 }
 
 void Logger::pushLog(const std::string &msg) {
@@ -79,10 +82,10 @@ void Logger::InitGlobalLogger(int type) {
     g_logger->init();
 }
 
-Logger &Logger::GetGlobalLogger() {
+Logger &Logger::SetGlobalLogger(int type) {
     if (g_logger == nullptr) {
         std::once_flag flag;
-        std::call_once(flag, InitGlobalLogger, 3);
+        std::call_once(flag, InitGlobalLogger, type);
     }
     return *g_logger;
 }

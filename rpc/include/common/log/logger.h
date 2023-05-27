@@ -10,12 +10,14 @@
 #include <cstdio>
 #include "loglevel.h"
 #include "appender.h"
+#include "timer_channel.h"
+#include "channel.h"
 
 
 #define LOG_DEBUG(str, ...) \
     do { \
-        if (rpc::Logger::GetGlobalLogger().getLevel() <= LogLevel::DEBUG) { \
-            rpc::Logger::GetGlobalLogger().pushLog(rpc::LogEvent(LogLevel::DEBUG).toString() \
+        if (rpc::Logger::SetGlobalLogger().getLevel() <= LogLevel::DEBUG) { \
+            rpc::Logger::SetGlobalLogger().pushLog(rpc::LogEvent(LogLevel::DEBUG).toString() \
             + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" \
             + rpc::formatString(str, ##__VA_ARGS__) + '\n'); \
         } \
@@ -23,8 +25,8 @@
 
 #define LOG_INFO(str, ...) \
     do { \
-        if (rpc::Logger::GetGlobalLogger().getLevel() <= LogLevel::INFO) { \
-            rpc::Logger::GetGlobalLogger().pushLog(rpc::LogEvent(LogLevel::INFO).toString() \
+        if (rpc::Logger::SetGlobalLogger().getLevel() <= LogLevel::INFO) { \
+            rpc::Logger::SetGlobalLogger().pushLog(rpc::LogEvent(LogLevel::INFO).toString() \
             + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" \
             + rpc::formatString(str, ##__VA_ARGS__) + "\n"); \
         } \
@@ -32,8 +34,8 @@
 
 #define LOG_ERROR(str, ...) \
     do {                    \
-        if (rpc::Logger::GetGlobalLogger().getLevel() <= LogLevel::ERROR) { \
-            rpc::Logger::GetGlobalLogger().pushLog(rpc::LogEvent(LogLevel::ERROR).toString() \
+        if (rpc::Logger::SetGlobalLogger().getLevel() <= LogLevel::ERROR) { \
+            rpc::Logger::SetGlobalLogger().pushLog(rpc::LogEvent(LogLevel::ERROR).toString() \
             + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" \
             + rpc::formatString(str, ##__VA_ARGS__) + '\n'); \
         } \
@@ -78,7 +80,7 @@ class Logger {
     void syncLoop();
   
   public:
-    static Logger &GetGlobalLogger();
+    static Logger &SetGlobalLogger(int type = 3);
     
     static void InitGlobalLogger(int type = 1);
   
@@ -95,6 +97,8 @@ class Logger {
     int file_size_{0};
     
     int type_{0};
+    
+    TimerChannel::s_ptr timer_channel_;
     
 };
 
