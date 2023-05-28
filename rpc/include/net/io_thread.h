@@ -6,7 +6,7 @@
 #define RPC_IO_THREAD_H
 #include <pthread.h>
 #include <semaphore>
-#include <thread>]
+#include <thread>
 #include "eventloop.h"
 
 namespace rpc {

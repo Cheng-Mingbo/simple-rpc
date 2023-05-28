@@ -83,6 +83,7 @@ void *AsyncLogger::Loop(AsyncLogger *async_logger) {
         }
         return nullptr;
     }
+    return nullptr;
 }
 
 void AsyncLogger::stop() {

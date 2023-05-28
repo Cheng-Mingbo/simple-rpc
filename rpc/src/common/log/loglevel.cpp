@@ -28,4 +28,6 @@ LogLevel StringToLogLevel(const std::string& level) {
     } else if (level == "ERROR") {
         return LogLevel::ERROR;
     }
+    
+    return LogLevel::UNKNOW;
 }

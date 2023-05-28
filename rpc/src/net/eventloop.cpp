@@ -21,19 +21,19 @@
     listen_fds_.insert(channel->getFd());\
     LOG_DEBUG("EventLoop::addEpollEvent() success: fd: %d", channel->getFd());                         \
     
-#define DEL_EPOLL_EVENT() \
-    auto it = listen_fds_.find(channel->getFd());\
-    int op = EPOLL_CTL_DEL;\
-    if (it != listen_fds_.end()) {\
-        return;\
-    }\
-    epoll_event tmp = channel->getEvents();\
-    if (epoll_ctl(epoll_fd_, op, channel->getFd(), &tmp) < 0) {\
-    LOG_ERROR("EventLoop::removeEpollEvent() error: %d, info[%s]", errno, strerror(errno));\
-    }\
-    listen_fds_.erase(channel->getFd());\
-    LOG_DEBUG("EventLoop::removeEpollEvent() success: fd: %d", channel->getFd());\
-    
+#define DELETE_TO_EPOLL() \
+    auto it = listen_fds_.find(channel->getFd()); \
+    if (it == listen_fds_.end()) { \
+      return; \
+    } \
+    int op = EPOLL_CTL_DEL; \
+    epoll_event tmp = channel->getEvents(); \
+    int rt = epoll_ctl(epoll_fd_, op, channel->getFd(), NULL); \
+    if (rt == -1) { \
+      LOG_ERROR("failed epoll_ctl when add fd, errno=%d, error=%s", errno, strerror(errno)); \
+    } \
+    listen_fds_.erase(channel->getFd()); \
+    LOG_DEBUG("delete event success, fd[%d]", channel->getFd());  \
     
 namespace rpc {
 
@@ -176,10 +176,10 @@ void EventLoop::addEpollEvent(Channel *channel) {
 
 void EventLoop::removeEpollEvent(rpc::Channel *channel) {
     if (isInLoopThread()) {
-        DEL_EPOLL_EVENT();
+        DELETE_TO_EPOLL();
     } else {
-        auto cb = [this, &channel]() {
-            DEL_EPOLL_EVENT();
+        auto cb = [this, channel]() {
+            DELETE_TO_EPOLL();
         };
         addTask(cb, true);
     }
