@@ -2,6 +2,7 @@
 // Created by cheng on 23-5-28.
 //
 
+#include <netinet/in.h>
 #include "buffer.h"
 
 namespace rpc {
@@ -45,9 +46,9 @@ void TcpBuffer::resize(int size) {
     capacity_ = size;
 }
 
-void TcpBuffer::readFromBuffer(std::vector<char> &re, int len) {
+bool TcpBuffer::readFromBuffer(std::vector<char> &re, int len) {
     if (readableBytes() == 0) {
-        return;
+        return false;
     }
     int read_size = std::min(readableBytes(), len);
     std::vector<char> tmp(read_size);
@@ -55,6 +56,7 @@ void TcpBuffer::readFromBuffer(std::vector<char> &re, int len) {
     re = std::move(tmp);
     read_index_ += read_size;
     adjustBuffer();
+    return true;
 }
 
 void TcpBuffer::adjustBuffer() {
@@ -83,5 +85,36 @@ void TcpBuffer::moveWriteIndex(int len) {
     }
     write_index_ += len;
     
+}
+
+bool TcpBuffer::readFromBuffer(char &re) {
+    if (readableBytes() == 0) {
+        return false;
+    }
+    re = buffer_[read_index_];
+    read_index_++;
+    adjustBuffer();
+    return true;
+}
+
+bool TcpBuffer::readFromBuffer(int32_t &re) {
+    if (readableBytes() < 4) {
+        return false;
+    }
+    re = *(int32_t *) (buffer_.data() + read_index_);
+    re = ::ntohl(re);
+    read_index_ += 4;
+    adjustBuffer();
+    return true;
+}
+
+bool TcpBuffer::readFromBuffer(std::string &re, int len) {
+    if (readableBytes() < len) {
+        return false;
+    }
+    re = std::string(buffer_.begin() + read_index_, buffer_.begin() + read_index_ + len);
+    read_index_ += len;
+    adjustBuffer();
+    return true;
 }
 }

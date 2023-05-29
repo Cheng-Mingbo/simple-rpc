@@ -7,13 +7,13 @@
 #include <memory>
 
 namespace rpc {
-  class AbstractProtocol : public std::enable_shared_from_this<AbstractProtocol> {
+  struct AbstractProtocol : public std::enable_shared_from_this<AbstractProtocol> {
     public:
       using s_ptr = std::shared_ptr<AbstractProtocol>;
         virtual ~AbstractProtocol() = default;
         
     public:
-      std::string msg_id;
+      std::string msg_id_;
   };
 }
 #endif //RPC_ABSTRACT_PROTOCOL_H

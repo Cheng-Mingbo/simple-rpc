@@ -8,6 +8,7 @@
 #include "buffer.h"
 #include "eventloop.h"
 #include "channel.h"
+#include "abstract_coder.h"
 #include "abstract_protocol.h"
 
 namespace rpc {
@@ -58,8 +59,7 @@ class TcpConnection {
   private:
     EventLoop* loop_ {nullptr};
     Channel* channel_ {nullptr};
-    // TODO: add coder
-    // ...
+    AbstractCoder* coder_ {nullptr};
     TcpConnectionState state_ {TcpConnectionState::NotConnected};
     
     NetAddr::s_ptr local_addr_;

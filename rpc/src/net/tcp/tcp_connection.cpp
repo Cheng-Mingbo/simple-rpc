@@ -5,6 +5,8 @@
 #include "tcp_connection.h"
 #include "channel_group.h"
 #include "logger.h"
+#include "tinypb_coder.h"
+#include "tinypb_protocol.h"
 
 #include <utility>
 #include <cstring>
@@ -24,8 +26,7 @@ TcpConnection::TcpConnection(EventLoop *loop, int fd, int buffer_size, NetAddr::
     channel_ = ChannelGroup::GetChannelGroup()->getChannel(fd);
     channel_->setNonBlock();
     
-    // TODO: init coder
-    // ...
+    coder_ = new TinyPBCoder();
     
     if (type_ == TcpConnectionType::Server) {
         listenRead();
@@ -34,8 +35,10 @@ TcpConnection::TcpConnection(EventLoop *loop, int fd, int buffer_size, NetAddr::
 }
 
 TcpConnection::~TcpConnection() {
-    // TODO: delete coder
-    // ...
+    if (coder_) {
+        delete coder_;
+        coder_ = nullptr;
+    }
 }
 
 void TcpConnection::onRead() {
@@ -78,14 +81,20 @@ void TcpConnection::onRead() {
 }
 
 void TcpConnection::excute() {
-    // TODO: excute
-    
-    // 将input_buffer_中的数据全部放入output_buffer_中
-    std::vector<char> data;
-    input_buffer_->readFromBuffer(data, input_buffer_->readableBytes());
-    std::string str(data.begin(), data.end());
-    output_buffer_->writeToBuffer(str.c_str(), str.size());
-    listenWrite();
+    if (type_ == TcpConnectionType::Server) {
+        std::vector<AbstractProtocol::s_ptr> results;
+        coder_->decode(results, input_buffer_);
+        // TODO
+        coder_->encode(results, output_buffer_);
+        listenWrite();
+    } else {
+        std::vector<AbstractProtocol::s_ptr> results;
+        coder_->decode(results, input_buffer_);
+        for (auto & result : results) {
+            auto message = std::dynamic_pointer_cast<TinyPBProtocol>(result);
+            LOG_INFO("TcpConnection::excute() receive message %s", message->toString().c_str());
+        }
+    }
 }
 
 void TcpConnection::onWrite() {
@@ -94,8 +103,14 @@ void TcpConnection::onWrite() {
         return;
     }
     
-    // TODO: implement Client's write
-    // ...
+    if (type_ == TcpConnectionType::Client) {
+        std::vector<AbstractProtocol::s_ptr> messages;
+        
+        for (auto & write_don : write_dons_) {
+            messages.push_back(write_don.first);
+        }
+        coder_->encode(messages, output_buffer_);
+    }
     
     bool is_write_all = false;
     while (true) {
@@ -127,7 +142,12 @@ void TcpConnection::onWrite() {
        loop_->addEpollEvent(channel_);
    }
     
-    // TODO: implement Client's write
+    if (type_ == TcpConnectionType::Client) {
+        for (auto & write_don : write_dons_) {
+            write_don.second(write_don.first);
+        }
+        write_dons_.clear();
+    }
 }
 
 void TcpConnection::clear() {

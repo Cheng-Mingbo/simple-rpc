@@ -21,7 +21,10 @@ class TcpBuffer {
     int writeIndex() const;
     
     void writeToBuffer(const char* data, int len);
-    void readFromBuffer(std::vector<char>& re, int len);
+    bool readFromBuffer(std::vector<char>& re, int len);
+    bool readFromBuffer(char& re);
+    bool readFromBuffer(int32_t& re);
+    bool readFromBuffer(std::string& re, int len);
     void adjustBuffer();
     
     void moveReadIndex(int len);
