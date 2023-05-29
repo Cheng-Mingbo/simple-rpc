@@ -36,7 +36,7 @@ void TcpServer::onAccept() {
     client_count_++;
     
     IOThread* io_thread = io_thread_group_->getNextIOThread();
-    TcpConnection::s_ptr conn = std::make_shared<TcpConnection>(io_thread->getEventLoop(), client_fd, 4096, peer_addr, local_addr_, TcpConnectionType::Server);
+    TcpConnection::s_ptr conn = std::make_shared<TcpConnection>(io_thread->getEventLoop(), client_fd, 256, peer_addr, local_addr_, TcpConnectionType::Server);
     conn->setState(TcpConnectionState::Connected);
     clients_.insert(conn);
     LOG_INFO("TcpServer::onAccept() new connection, fd = %d, peer_addr = %s, local_addr = %s", client_fd, peer_addr->toString().c_str(), local_addr_->toString().c_str());

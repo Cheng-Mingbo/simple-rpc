@@ -12,13 +12,11 @@
 namespace rpc {
 Timer::Timer() : Channel() {
     fd_ = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    LOG_DEBUG("Timer::Timer() fd: %d", fd_);
     
     listen(Channel::TriggerEvent::kReadEvent, std::bind(&Timer::onTimer, this));
 }
 
 void Timer::onTimer() {
-    LOG_DEBUG("Timer::onTimer()");
     uint64_t one = 1;
     ssize_t n = read(fd_, &one, sizeof(one));
     if (n != sizeof(one)) {

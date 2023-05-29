@@ -7,6 +7,7 @@
 #include "logger.h"
 
 #include <utility>
+#include <cstring>
 
 namespace rpc {
 
@@ -45,25 +46,19 @@ void TcpConnection::onRead() {
     bool is_read_all = false;
     bool is_close = false;
     
+    char buffer[1024];
+    bzero(buffer, sizeof(buffer));
+    
     while (!is_read_all) {
-        if (input_buffer_->writableBytes() == 0) {
-            input_buffer_->resize((int)input_buffer_->getSize() * 2);
-        }
-        int read_count = input_buffer_->writableBytes();
-        auto write_ptr = input_buffer_->getWritePtr();
-        ssize_t n = ::read(channel_->getFd(), write_ptr, read_count);
+        ssize_t n = ::read(channel_->getFd(), buffer, sizeof(buffer));
+        LOG_DEBUG("TcpConnection::onRead() read %d bytes", n);
         if (n > 0) {
-            input_buffer_->moveWriteIndex(n);
-            if (n == read_count) {
-                continue;
-            } else if (n < read_count) {
-                is_read_all = true;
-                break;
-            }
+            input_buffer_->writeToBuffer(buffer, n);
+            bzero(buffer, sizeof(buffer));
         } else if (n == 0) {
             is_close = true;
             break;
-        } else if (n == -1 && errno == EAGAIN) {
+        } else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
             is_read_all = true;
             break;
         }
@@ -112,13 +107,10 @@ void TcpConnection::onWrite() {
         int write_size = output_buffer_->readableBytes();
         auto read_ptr = output_buffer_->getReadPtr();
         int n = ::write(channel_->getFd(), read_ptr, write_size);
-        
+        LOG_DEBUG("TcpConnection::onWrite() write %d bytes", n);
         if (n > 0) {
-            LOG_INFO("write %d bytes, msg: %s", n, read_ptr);
             output_buffer_->moveReadIndex(n);
-            if (n == write_size) {
-                continue;
-            } else if (n < write_size) {
+            if (output_buffer_->readableBytes() == 0) {
                 is_write_all = true;
                 break;
             }
@@ -129,10 +121,11 @@ void TcpConnection::onWrite() {
             break;
         }
     }
-    if (is_write_all) {
-        channel_->cancel(Channel::TriggerEvent::kWriteEvent);
-        loop_->addEpollEvent(channel_);
-    }
+    
+   if (is_write_all) {
+       channel_->cancel(Channel::TriggerEvent::kWriteEvent);
+       loop_->addEpollEvent(channel_);
+   }
     
     // TODO: implement Client's write
 }

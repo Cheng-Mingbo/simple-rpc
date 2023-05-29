@@ -19,7 +19,6 @@
     LOG_ERROR("EventLoop::addEpollEvent() error: %d, info[%s]", errno, strerror(errno));\
     }\
     listen_fds_.insert(channel->getFd());\
-    LOG_DEBUG("EventLoop::addEpollEvent() success: fd: %d", channel->getFd());                         \
     
 #define DELETE_TO_EPOLL() \
     auto it = listen_fds_.find(channel->getFd()); \
@@ -33,7 +32,6 @@
       LOG_ERROR("failed epoll_ctl when add fd, errno=%d, error=%s", errno, strerror(errno)); \
     } \
     listen_fds_.erase(channel->getFd()); \
-    LOG_DEBUG("delete event success, fd[%d]", channel->getFd());  \
     
 namespace rpc {
 

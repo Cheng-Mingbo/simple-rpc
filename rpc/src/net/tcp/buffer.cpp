@@ -42,6 +42,7 @@ void TcpBuffer::resize(int size) {
     buffer_ = std::move(tmp);
     read_index_ = 0;
     write_index_ = read_index_ + count;
+    capacity_ = size;
 }
 
 void TcpBuffer::readFromBuffer(std::vector<char> &re, int len) {

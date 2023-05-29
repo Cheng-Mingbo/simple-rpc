@@ -11,7 +11,6 @@ namespace rpc {
 IOThread::IOThread() : init_sem_(0), start_sem_(0) {
     thread_ = std::jthread([this] {rpc::IOThread::threadFunc(this);});
     init_sem_.acquire();
-    LOG_DEBUG("IOThread init success, tid=%d", tid_);
 }
 
 IOThread::~IOThread() {
