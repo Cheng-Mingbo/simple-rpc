@@ -26,6 +26,9 @@ void RpcDispatcher::dispatch(AbstractProtocol::s_ptr request, AbstractProtocol::
     std::string full_name = req->method_name_;
     std::string service_name;
     std::string method_name;
+    
+    resp->msg_id_ = req->msg_id_;
+    resp->method_name_ = req->method_name_;
     if (!parseService(full_name, service_name, method_name)) {
         setTinyPBError(resp, ERROR_PARSE_SERVICE_NAME, "service name or method name is invalid");
         return;
