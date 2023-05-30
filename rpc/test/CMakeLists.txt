@@ -8,7 +8,7 @@ foreach(testSrc ${TEST_SRCS})
     add_executable(${testName} ${testSrc})
 
     # 链接库到测试可执行文件
-    target_link_libraries(${testName} yaml-cpp rpc)
+    target_link_libraries(${testName} protobuf yaml-cpp rpc)
 
     # 添加到测试中
     add_test(NAME ${testName} COMMAND ${testName})

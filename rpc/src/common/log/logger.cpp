@@ -88,8 +88,8 @@ void Logger::InitGlobalLogger(int type) {
 }
 
 Logger &Logger::SetGlobalLogger(int type) {
+    static std::once_flag flag;
     if (g_logger == nullptr) {
-        std::once_flag flag;
         std::call_once(flag, InitGlobalLogger, type);
     }
     return *g_logger;

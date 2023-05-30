@@ -7,6 +7,7 @@
 #include "logger.h"
 #include "tinypb_coder.h"
 #include "tinypb_protocol.h"
+#include "rpc_dispatcher.h"
 
 #include <utility>
 #include <cstring>
@@ -82,18 +83,28 @@ void TcpConnection::onRead() {
 
 void TcpConnection::excute() {
     if (type_ == TcpConnectionType::Server) {
-        std::vector<AbstractProtocol::s_ptr> results;
-        coder_->decode(results, input_buffer_);
-        // TODO
-        coder_->encode(results, output_buffer_);
+        std::vector<AbstractProtocol::s_ptr> messages;
+        std::vector<AbstractProtocol::s_ptr> responses;
+        coder_->decode(messages, input_buffer_);
+        for (auto & message : messages) {
+            LOG_INFO("Success receive request [%s] from client [%s]", message->msg_id_.c_str(), peer_addr_->toString().c_str());
+            TinyPBProtocol::s_ptr reply = std::make_shared<TinyPBProtocol>();
+            RpcDispatcher::GetRpcDispatcher()->dispatch(message, reply, this);
+            responses.push_back(reply);
+        }
+        coder_->encode(responses, output_buffer_);
         listenWrite();
     } else {
-        std::vector<AbstractProtocol::s_ptr> results;
-        coder_->decode(results, input_buffer_);
-        for (auto & result : results) {
-            auto message = std::dynamic_pointer_cast<TinyPBProtocol>(result);
-            LOG_INFO("TcpConnection::excute() receive message %s", message->toString().c_str());
-        }
+       std::vector<AbstractProtocol::s_ptr> messages;
+         coder_->decode(messages, input_buffer_);
+            for (auto & message : messages) {
+                LOG_INFO("Success receive response [%s] from server [%s]", message->msg_id_.c_str(), peer_addr_->toString().c_str());
+                auto it = read_dons_.find(message->msg_id_);
+                if (it != read_dons_.end()) {
+                    it->second(message);
+                    read_dons_.erase(it);
+                }
+            }
     }
 }
 
