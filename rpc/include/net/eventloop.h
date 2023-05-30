@@ -47,7 +47,7 @@ class EventLoop {
     std::set<int> listen_fds_;
     int epoll_fd_;
     std::mutex  mutex_;
-    std::atomic<bool> stop_;
+    std::atomic<bool> stop_ {true };
     int wakeup_fd_;
     WakeupChannel* wakeup_channel_ {nullptr};
     Timer* timer_ {nullptr};

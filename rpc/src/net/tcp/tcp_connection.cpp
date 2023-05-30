@@ -90,6 +90,7 @@ void TcpConnection::excute() {
             LOG_INFO("Success receive request [%s] from client [%s]", message->msg_id_.c_str(), peer_addr_->toString().c_str());
             TinyPBProtocol::s_ptr reply = std::make_shared<TinyPBProtocol>();
             RpcDispatcher::GetRpcDispatcher()->dispatch(message, reply, this);
+            LOG_DEBUG("Success dispatch request [%s] from client [%s], reponse is %s", message->msg_id_.c_str(), peer_addr_->toString().c_str(), reply->msg_id_.c_str());
             responses.push_back(reply);
         }
         coder_->encode(responses, output_buffer_);

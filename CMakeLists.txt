@@ -10,10 +10,12 @@ include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net/coder)
 include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net/rpc)
 include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net/tcp)
 include_directories(${PROJECT_SOURCE_DIR}/rpc/include/net)
+include_directories(${PROJECT_SOURCE_DIR}/rpc/protobuf)
 
 # Create the rpc library
 add_library(rpc "")
 
 add_subdirectory(rpc/test)
 add_subdirectory(rpc/src)
+add_subdirectory(rpc/protobuf)
 

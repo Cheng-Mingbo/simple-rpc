@@ -35,6 +35,7 @@ TcpClient::~TcpClient() {
 
 void TcpClient::connect(std::function<void()> done) {
     int ret = ::connect(fd_, peer_addr_->getSockAddr(), peer_addr_->getAddrLen());
+    LOG_DEBUG("connect [%s] ret: %d", peer_addr_->toString().c_str(), ret);
     if (ret == 0) {
         LOG_DEBUG("connect [%s] success", peer_addr_->toString().c_str());
         connection_->setState(TcpConnectionState::Connected);
@@ -44,6 +45,7 @@ void TcpClient::connect(std::function<void()> done) {
         }
     } else if (ret == -1) {
         if (errno == EINPROGRESS) {
+            LOG_DEBUG("connect [%s] in progress", peer_addr_->toString().c_str());
             channel_->listen(Channel::TriggerEvent::kWriteEvent, [this, done]() {
                int ret = ::connect(fd_, peer_addr_->getSockAddr(), peer_addr_->getAddrLen());
                if ((ret < 0 && errno == EISCONN) || (ret == 0)) {
@@ -52,9 +54,11 @@ void TcpClient::connect(std::function<void()> done) {
                      initLocalAddr();
                 } else {
                    if (errno == ECONNREFUSED) {
+                       LOG_ERROR("connect [%s] refused, sys error: %s", peer_addr_->toString().c_str(), strerror(errno));
                        connect_error_code_ = ERROR_PEER_CLOSED;
                        connect_error_msg_ = "connect refused, sys error: " + std::string(strerror(errno));
                    } else {
+                       LOG_ERROR("connect [%s] failed, sys error: %s", peer_addr_->toString().c_str(), strerror(errno));
                        connect_error_code_ = ERROR_FAILED_CONNECT;
                        connect_error_msg_ = "connect failed, sys error: " + std::string(strerror(errno));
                    }
